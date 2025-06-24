@@ -429,7 +429,6 @@ int main( int argc, char* args[] )
 					if(e.type == SDL_MOUSEBUTTONDOWN
 					)
 					{
-						printf("mousedown!\n");
 					    //Get mouse position
 					    int x, y;
 					    SDL_GetMouseState( &x, &y );

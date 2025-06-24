@@ -155,7 +155,8 @@ int MineBoard::sweep(int x, int y){
 }
 
 int MineBoard::check_win() {
-    int x, y, count;
+    int x, y;
+    int count = 0;
     for (x=0;x<size_x;x++){
         for(y=0;y<size_y;y++){
             if (covered[y][x]) {
