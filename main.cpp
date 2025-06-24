@@ -477,7 +477,7 @@ int main( int argc, char* args[] )
 				SDL_RenderPresent( gRenderer );
 
 				// end logic
-				// lose = mineboard.check_lose();
+				lose = mineboard.check_lose();
 				win = mineboard.check_win();
 				if (win || lose) {
 					// TODO add text announcement on win/lose

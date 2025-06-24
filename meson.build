@@ -4,7 +4,7 @@ project('minesweeper', 'cpp',
 sdl2_dep = dependency('sdl2')
 sdl2_image_dep = dependency('sdl2_image')
 
-executable('main', 'main.cpp', 
+executable('minesweeper', 'main.cpp', 
                 dependencies: [sdl2_dep, sdl2_image_dep], 
                 )
 

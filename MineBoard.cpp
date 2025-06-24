@@ -175,12 +175,12 @@ int MineBoard::check_lose() {
         for(y=0;y<size_y;y++){
             if (!covered[y][x]) {
                 if (board[y][x] == MINE_VALUE) {
-                    return 0;
+                    return 1;
                 }
             }
         }
     }
-    return 1;
+    return 0;
 }
 
 int MineBoard::showSquare(int x, int y) 
@@ -199,10 +199,10 @@ int MineBoard::showSquare(int x, int y)
 void MineBoard::reset() {
     int i, x, y, dy, dx;
     // Initialize the board & Cover Map
-
     for (int y=0; y<size_y; y++) {
         for (int x=0; x<size_x;x++) {
-            covered[y][x]=COVER;
+            board[y][x] = SAFE;
+            covered[y][x] = COVER;
         }
     }
 

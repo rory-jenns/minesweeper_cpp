@@ -7,6 +7,7 @@ Textures sourced from `MS-Texture` github repo [linked here](https://github.com/
 
 ## Build from Source
 
+```
 mkdir subprojects
 meson wrap sdl2
 meson wrap install sdl2
@@ -14,3 +15,11 @@ meson wrap install sdl2_image
 meson build
 cd build
 meson compile
+```
+
+Then to run:
+
+```
+cd build;
+./minesweeper
+```
