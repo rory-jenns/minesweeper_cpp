@@ -7,6 +7,8 @@ Textures sourced from `MS-Texture` github repo [linked here](https://github.com/
 
 ## Build from Source
 
+Using meson as a build tool - https://mesonbuild.com/
+
 ```
 mkdir subprojects
 meson wrap sdl2
