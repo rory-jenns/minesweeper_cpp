@@ -9,7 +9,7 @@ and may not be redistributed without written permission.*/
 
 #include <MineBoard.cpp>
 
-#define IMAGE_STAT_BG "../game_stats_background.png"
+#define IMAGE_STAT_BG "../assets/game_stats_background.png"
 #define IMAGE_NUM_FONT "numbers.png"
 
 //Button constants
@@ -347,7 +347,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Load sprites
-	if( !gButtonSpriteSheetTexture.loadFromFile( "../WinmineXP.png" ) )
+	if( !gButtonSpriteSheetTexture.loadFromFile( "../assets/WinmineXP.png" ) )
 	{
 		printf( "Failed to load button sprite texture!\n" );
 		success = false;
@@ -372,7 +372,7 @@ bool loadMedia()
 	}
 
 	//Load Numbers
-	if( !gNumbers.loadFromFile( "../numbers.png" ) )
+	if( !gNumbers.loadFromFile( "../assets/numbers.png" ) )
 	{
 		printf( "Failed to load numbers sprite texture!\n" );
 		success = false;
@@ -391,7 +391,7 @@ bool loadMedia()
 
 	
 	//Load sprites
-	if( !gBGBorder.loadFromFile( "../borders.png" ) )
+	if( !gBGBorder.loadFromFile( "../assets/borders.png" ) )
 	{
 		printf( "Failed to load border sprite texture!\n" );
 		success = false;
