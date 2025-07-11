@@ -9,8 +9,8 @@ and may not be redistributed without written permission.*/
 
 #include <MineBoard.cpp>
 
-#define IMAGE_SRC "../MS-Texture/png/cells/ChocolateSweeper"
-
+#define IMAGE_STAT_BG "../game_stats_background.png"
+#define IMAGE_NUM_FONT "numbers.png"
 
 //Button constants
 const int BUTTON_WIDTH = 16;
@@ -28,13 +28,13 @@ const int NUM_WIDTH = 10;
 const int NUM_HEIGHT = 10;
 const int NUM_MINES = 10;
 
-const int SCREEN_PADDING = 20;
+const int SCREEN_PADDING = MINESPRITE_SIZE*SCALING;
 
 const int BOARD_WIDTH = MINESPRITE_SIZE*SCALING*NUM_WIDTH;
 const int BOARD_HEIGHT = MINESPRITE_SIZE*SCALING*NUM_HEIGHT;
 
 const int SCREEN_WIDTH = SCREEN_PADDING*2+BOARD_WIDTH;
-const int SCREEN_HEIGHT =  SCREEN_PADDING*2+BOARD_HEIGHT;
+const int SCREEN_HEIGHT =  SCREEN_PADDING*3+BOARD_HEIGHT + 48*SCALING;
 
 enum SpriteStates
 {
@@ -48,6 +48,15 @@ int sprite_mapping[12] = {
 	EMPTY, ADJ_ONE, ADJ_TWO, ADJ_THREE, ADJ_FOUR, 
 	ADJ_FIVE, ADJ_SIX, ADJ_SEVEN, ADJ_EIGHT,
 	FLAGGED, COVERED, MINE
+};
+
+
+enum SpriteStatesBorders
+{
+	BBL,BTL,BTR,BBR,
+	BTB,BLR,BT,BL,
+	BB,BR,BTBL,BBLR,
+	BTBR,BTLR,B_NONE,B_ALL
 };
 
 //Texture wrapper class
@@ -111,9 +120,20 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
-//Mouse button sprites
+// Load Minesweeper tiles
 SDL_Rect gTileSpriteClips[ TOTAL_BUTTONS ];
 LTexture gButtonSpriteSheetTexture;
+
+// Load Background Image
+LTexture gStatBackground;
+
+// Load Font Numbers
+SDL_Rect gNumbersSpriteClips[ 10 ];
+LTexture gNumbers;
+
+// Load Background Border Tiles
+SDL_Rect gBGBorderSpriteClips[ 16 ];
+LTexture gBGBorder;
 
 LTexture::LTexture()
 {
@@ -220,7 +240,7 @@ void LTexture::free()
 
 void LTexture::setColor( Uint8 red, Uint8 green, Uint8 blue )
 {
-	//Modulate texture rgb
+	//Modulate texture rgb 
 	SDL_SetTextureColorMod( mTexture, red, green, blue );
 }
 
@@ -337,10 +357,54 @@ bool loadMedia()
         // Set sprites
 		for( int i = 0; i < NUM_SPRITES; ++i )
 		{
-			gTileSpriteClips[ i ].x = (i % 4)*16;
+			gTileSpriteClips[ i ].x = (i % 4) * 16;
 			gTileSpriteClips[ i ].y = (i / 4) * 16;
 			gTileSpriteClips[ i ].w = BUTTON_WIDTH;
 			gTileSpriteClips[ i ].h = BUTTON_HEIGHT;
+		}
+    }
+
+	//Load stat background
+	if( !gStatBackground.loadFromFile( IMAGE_STAT_BG ) )
+	{
+		printf( "Failed to load Stats BG\n" );
+		success = false;
+	}
+
+	//Load Numbers
+	if( !gNumbers.loadFromFile( "../numbers.png" ) )
+	{
+		printf( "Failed to load numbers sprite texture!\n" );
+		success = false;
+	}
+	else
+	{
+        // Set sprites
+		for( int i = 0; i < 10; ++i )
+		{
+			gNumbersSpriteClips[ i ].x = i*16;
+			gNumbersSpriteClips[ i ].y = 0;
+			gNumbersSpriteClips[ i ].w = BUTTON_WIDTH;
+			gNumbersSpriteClips[ i ].h = BUTTON_HEIGHT;
+		}
+    }
+
+	
+	//Load sprites
+	if( !gBGBorder.loadFromFile( "../borders.png" ) )
+	{
+		printf( "Failed to load border sprite texture!\n" );
+		success = false;
+	}
+	else
+	{
+        // Set sprites
+		for( int i = 0; i < 16; ++i )
+		{
+			gBGBorderSpriteClips[ i ].x = (i % 4) * 16;
+			gBGBorderSpriteClips[ i ].y = (i / 4) * 16;
+			gBGBorderSpriteClips[ i ].w = BUTTON_WIDTH;
+			gBGBorderSpriteClips[ i ].h = BUTTON_HEIGHT;
 		}
     }
 
@@ -366,9 +430,93 @@ void close()
 
 void drawBoard(SDL_Renderer* gRenderer , MineBoard* mineboard) {
 
-	// printf("draw board");
     int dest_sprite_size = MINESPRITE_SIZE*SCALING;
 
+	// Draw background
+    SDL_Rect boardVPBG;
+    boardVPBG.x = 0;
+    boardVPBG.y = 0;
+    boardVPBG.w = SCREEN_WIDTH;
+    boardVPBG.h = SCREEN_HEIGHT;
+
+    SDL_RenderSetViewport( gRenderer, &boardVPBG );
+
+
+    int x, y;
+    // for (y=0; y<mineboard->getHeight();y++){
+    //     for (x=0; x<mineboard->getWidth();x++){
+    //         gButtonSpriteSheetTexture.render( x*dest_sprite_size, y*dest_sprite_size, 
+	// 			&gBGBorderSpriteClips[ BB ], 
+	// 			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+    //     }
+    // }
+	// horizontal lines
+	for (x=1; x<mineboard->getWidth()+1;x++){
+		// above board
+		gBGBorder.render( x*dest_sprite_size, 
+			0,  &gBGBorderSpriteClips[ BB ], 
+			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+		// below board
+		gBGBorder.render( x*dest_sprite_size, 
+			dest_sprite_size*(mineboard->getHeight()+1), &gBGBorderSpriteClips[ BTB ], 
+			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+		// below info
+		gBGBorder.render( x*dest_sprite_size, 
+			dest_sprite_size*(mineboard->getHeight()+1+4), &gBGBorderSpriteClips[ BT ], 
+			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	}
+	// vertical lines
+	for (y=0; y<mineboard->getHeight()+3+3;y++){
+		// above board
+		gBGBorder.render( 0,  
+			y*dest_sprite_size,  &gBGBorderSpriteClips[ BR ], 
+			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+		// below board
+		gBGBorder.render( (mineboard->getWidth()+1)*dest_sprite_size, 
+			y*dest_sprite_size, &gBGBorderSpriteClips[ BL ], 
+			0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	}
+	// fill corners
+
+	gBGBorder.render( 0, 0, &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	gBGBorder.render( (mineboard->getWidth()+1)*dest_sprite_size, 0, &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	
+	gBGBorder.render( 0, dest_sprite_size*(mineboard->getHeight()+1), &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	gBGBorder.render( (mineboard->getWidth()+1)*dest_sprite_size, dest_sprite_size*(mineboard->getHeight()+1), &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	
+	gBGBorder.render( 0, (mineboard->getHeight()+3+3-1)*dest_sprite_size, &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	gBGBorder.render( (mineboard->getWidth()+1)*dest_sprite_size, (mineboard->getHeight()+3+3-1)*dest_sprite_size, &gBGBorderSpriteClips[ B_NONE ], 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+
+
+
+	// draw info tiles
+    SDL_Rect boardVPStat;
+    boardVPStat.x = SCREEN_PADDING;
+    boardVPStat.y = 2*SCREEN_PADDING + BOARD_HEIGHT;
+    boardVPStat.w = BOARD_WIDTH;
+    boardVPStat.h = BOARD_HEIGHT;
+
+    SDL_RenderSetViewport( gRenderer, &boardVPStat );
+
+	SDL_Rect full = {0, 32, 160, 48};
+	gStatBackground.render( 0,0, &full, 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+
+	int num_flags = mineboard->numFlags();
+	int num_mines = mineboard->numMines() - num_flags;
+
+	SDL_Rect num_flag_dest_0 = {num_flags / 10 * 16, 0, 16, 16};
+	SDL_Rect num_flag_dest_1 = {num_flags % 10 * 16, 0, 16, 16};
+	SDL_Rect num_mine_dest_0 = {num_mines / 10 * 16, 0, 16, 16};
+	SDL_Rect num_mine_dest_1 = {num_mines % 10 * 16, 0, 16, 16};
+
+	gNumbers.render( dest_sprite_size*3, dest_sprite_size*1, &num_flag_dest_0, 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	gNumbers.render( dest_sprite_size*4, dest_sprite_size*1, &num_flag_dest_1, 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+
+	gNumbers.render( dest_sprite_size*7, dest_sprite_size*1, &num_mine_dest_0, 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+	gNumbers.render( dest_sprite_size*8, dest_sprite_size*1, &num_mine_dest_1, 0.0, NULL, SDL_FLIP_NONE, 2.0, 2.0);
+
+
+	// draw tile set
     SDL_Rect boardVP;
     boardVP.x = SCREEN_PADDING;
     boardVP.y = SCREEN_PADDING;
@@ -378,7 +526,7 @@ void drawBoard(SDL_Renderer* gRenderer , MineBoard* mineboard) {
 
     SDL_RenderSetViewport( gRenderer, &boardVP );
 
-    int x, y, square;
+    int square;
     for (y=0; y<mineboard->getHeight();y++){
         for (x=0; x<mineboard->getWidth();x++){
             square = mineboard->showSquare(x,y);

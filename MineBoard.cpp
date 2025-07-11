@@ -24,6 +24,9 @@ class MineBoard
     int getHeight() { return size_y; }
     int showSquare(int x, int y);
 
+    int numFlags() { return num_flags; }
+    int numMines() { return num_mines; }
+
     void reset();
 
     private:
@@ -32,7 +35,7 @@ class MineBoard
     int** covered;
     int size_x, size_y;
     int num_mines;
-    
+    int num_flags;  
 };
 
 
@@ -50,6 +53,7 @@ MineBoard::MineBoard(int widith, int height, int num_mines_in)
 {
     srand(time(NULL));   // Initialization, should only be called once.
     size_x = widith, size_y = height, num_mines = num_mines_in;
+    num_flags = 0;
 
     board = (int**) calloc(size_y, sizeof(int*));
     covered = (int**) calloc(size_y, sizeof(int*));
@@ -94,8 +98,15 @@ void MineBoard::uncover_board()
 void MineBoard::flag(int x, int y){
     if (!check_bounds(x,y)) {return;}
     if (!covered[y][x]) {return;}  // Swept an uncovered place
-    else if (covered[y][x] == FLAG) {covered[y][x] = COVER;}  // Unflag
-    else {covered[y][x] = FLAG;}
+    else if (covered[y][x] == FLAG)  // Unflag
+    {
+        covered[y][x] = COVER;
+        num_flags--;
+    }  
+    else {
+        covered[y][x] = FLAG;
+        num_flags++;
+    }
 }
 
 int MineBoard::sweep(int x, int y){
@@ -206,6 +217,9 @@ void MineBoard::reset() {
             covered[y][x] = COVER;
         }
     }
+
+    // reset flags
+    num_flags = 0;
 
     // Put the Mines down
     for (i=0; i<num_mines; i++) {
